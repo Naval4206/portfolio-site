@@ -10,7 +10,7 @@ pipeline {
     stages {
         stage('Clone Repository') {
             steps {
-                git branch: 'main', url: 'git@github.com:Naval4206/portfolio-site.git'
+                git branch: 'main', url: 'https://github.com/Naval4206/portfolio-site.git'
             }
         }
 
