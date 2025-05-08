@@ -4,7 +4,7 @@ pipeline {
     environment {
         EC2_USER = "ubuntu"
         EC2_HOST = "34.203.14.91"
-        EC2_KEY  = "/e/DevOps/Final\\ Project/mynewkey.pem"
+        EC2_KEY  = "E:/DevOps/Final Project/mynewkey.pem"
     }
 
     stages {
