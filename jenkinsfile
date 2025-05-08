@@ -1,0 +1,59 @@
+pipeline {
+    agent any
+
+    environment {
+        EC2_USER = "ubuntu"
+        EC2_HOST = "34.203.14.91"
+        EC2_KEY  = "/e/DevOps/Final\\ Project/agrocraft.pem"
+    }
+
+    stages {
+        stage('Clone Repository') {
+            steps {
+                git branch: 'main', url: 'git@github.com:Naval4206/portfolio-site.git'
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                sh 'docker build -t portfolio-image .'
+            }
+        }
+
+        stage('Save Docker Image as Tar') {
+            steps {
+                sh 'docker save portfolio-image -o portfolio.tar'
+            }
+        }
+
+        stage('Copy Image to EC2') {
+            steps {
+                sh '''
+                scp -o StrictHostKeyChecking=no -i "${EC2_KEY}" portfolio.tar ${EC2_USER}@${EC2_HOST}:/home/ubuntu/
+                '''
+            }
+        }
+
+        stage('Deploy on EC2') {
+            steps {
+                sh '''
+                ssh -o StrictHostKeyChecking=no -i "${EC2_KEY}" ${EC2_USER}@${EC2_HOST} << 'EOF'
+                  docker load -i portfolio.tar
+                  docker stop portfolio || true
+                  docker rm portfolio || true
+                  docker run -d -p 80:80 --name portfolio portfolio-image
+                EOF
+                '''
+            }
+        }
+    }
+
+    post {
+        success {
+            echo "\u2705 Deployment Complete! Visit: http://${EC2_HOST}"
+        }
+        failure {
+            echo "\u274c Build/Deployment failed!"
+        }
+    }
+}
